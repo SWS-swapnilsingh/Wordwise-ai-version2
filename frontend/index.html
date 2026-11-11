@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Go Beyond Word Meanings ✨</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main App Styles -->
+    <link rel="stylesheet" href="/static/styles.css">
+    <!-- Theme Detection (Prevents white flash on dark theme load) -->
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('wordwise_theme');
+                var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            } catch (e) { }
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="stApp">
+        <!-- Top Navigation Bar with Theme Switcher -->
+        <header class="top-nav">
+            <div class="nav-brand">
+                <i class="fas fa-graduation-cap brand-icon"></i>
+                <span class="brand-title">WordWise AI</span>
+            </div>
+            <div class="nav-actions">
+                <button type="button" id="themeToggleBtn" class="theme-toggle-btn"
+                    aria-label="Toggle dark and light theme" title="Switch between Dark and Light mode">
+                    <i class="fas fa-moon theme-toggle-icon" id="themeIcon"></i>
+                    <span id="themeText">Dark Mode</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-container" id="mainContainer">
+            <!-- Column 1: Learn Pronunciation -->
+            <div class="col-pronunciation" id="colLeft">
+                <div class="section-card">
+                    <h4 class="section-title">Learn Pronunciation</h4>
+                    <p class="country-text">country: US</p>
+
+                    <div class="form-group">
+                        <label for="pronWord" class="input-label">Enter a word:</label>
+                        <div class="input-row">
+                            <input type="text" id="pronWord" class="st-input" placeholder="Type a word..."
+                                autocomplete="off">
+                            <button type="button" id="pronBtn" class="st-search-btn" title="Search Pronunciation">
+                                <i class="fas fa-volume-up"></i> Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Info/Status box (Streamlit st.info style) -->
+                    <div id="pronStatus" class="st-alert st-alert-info" style="display: none;">
+                        <i class="fas fa-info-circle alert-icon"></i>
+                        <span id="pronStatusText"></span>
+                    </div>
+
+                    <!-- Pronunciation text container -->
+                    <div id="pronResult" class="pron-content" style="display: none;"></div>
+
+                    <!-- Pronunciation audio player -->
+                    <div id="pronAudioContainer" class="audio-wrapper" style="display: none;">
+                        <audio id="pronAudio" controls></audio>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Left Resizer Gutter (Drag to resize Left & Middle columns) -->
+            <div class="gutter-resizer" id="resizerLeft" title="Drag to resize columns (double-click to reset)">
+                <div class="gutter-resizer-line">
+                    <div class="gutter-resizer-handle"></div>
+                </div>
+            </div>
+
+            <!-- Column 2: Go Beyond Word Meanings (Middle Section) -->
+            <div class="col-meaning" id="colCenter">
+                <div class="section-card">
+                    <h1 class="main-title">✨ Go Beyond Word Meanings ✨</h1>
+                    <p class="main-description">
+                        This is designed to help users learn English words in a comprehensive, engaging, and
+                        easy-to-understand format. It provides most common meaning of that word, example sentences,
+                        pronunciation guides, verb forms, and common phrases along with usage rating for any English
+                        word requested.
+                    </p>
+
+                    <div class="form-group">
+                        <label for="meaningWord" class="input-label">Enter a word:</label>
+                        <div class="input-row">
+                            <input type="text" id="meaningWord" class="st-input st-input-main"
+                                placeholder="Type a word..." autocomplete="off">
+                            <button type="button" id="meaningBtn" class="st-search-btn st-search-btn-primary"
+                                title="Search Word Meaning">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Info/Status box (Streamlit st.info style) -->
+                    <div id="meaningStatus" class="st-alert st-alert-info" style="display: none;">
+                        <i class="fas fa-info-circle alert-icon"></i>
+                        <span id="meaningStatusText"></span>
+                    </div>
+
+                    <!-- Error box (Streamlit st.error style) -->
+                    <div id="meaningError" class="st-alert st-alert-error" style="display: none;">
+                        <i class="fas fa-exclamation-circle alert-icon"></i>
+                        <span id="meaningErrorText"></span>
+                    </div>
+
+                    <!-- Meaning Result container -->
+                    <div id="meaningResult" class="meaning-content" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Right Resizer Gutter (Drag to resize Middle & Right columns) -->
+            <div class="gutter-resizer" id="resizerRight" title="Drag to resize columns (double-click to reset)">
+                <div class="gutter-resizer-line">
+                    <div class="gutter-resizer-handle"></div>
+                </div>
+            </div>
+
+            <!-- Column 3: Native Pronunciation via YouGlish (YouTube + Transcript + Pronunciation Practice) -->
+            <div class="col-youglish" id="colRight">
+                <div class="section-card">
+                    <h4 class="section-title">
+                        <i class="fab fa-youtube" style="color: #ff0000; margin-right: 8px;"></i>Native Pronunciation
+                    </h4>
+                    <p class="country-text" id="youglishSubtitle" style="display: none;">Video context for: <span
+                            id="youglishCurrentWord" class="active-word-highlight"></span></p>
+
+                    <!-- Explicit Search for YouGlish -->
+                    <div class="form-group">
+                        <label for="word" class="input-label">Search in YouGlish explicitly:</label>
+                        <div class="input-row">
+                            <input type="text" id="word" class="st-input" placeholder="Type a word..." value=""
+                                autocomplete="off">
+                            <button type="button" id="go" class="st-search-btn" title="Search YouGlish explicitly">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- YouGlish widget loads here (components: 8 + 64: Video controls + Captions) -->
+                    <div id="widget-1" class="youglish-widget-box">
+                        <div id="youglishPlaceholder" class="youglish-empty-state">
+                            <i class="fab fa-youtube"
+                                style="font-size: 2.2rem; color: #cbd5e1; margin-bottom: 8px;"></i>
+                            <p style="color: #64748b; font-size: 0.92rem; margin: 0; line-height: 1.5;">Search a word in
+                                the middle section or type above to see native video pronunciations.</p>
+                        </div>
+                    </div>
+
+                    <!-- Check how you say the word (custom SpeechRecognition box) -->
+                    <!-- <div class="check-box" id="check-box" style="display:none;">
+                        <div class="bubble">
+                            <span class="bubble-avatar">👩‍🏫</span>
+                            <span>Check how you say "<b id="check-word-1"></b>" in English</span>
+                        </div>
+                        <div class="big-word" id="check-word-2"></div>
+                        <button type="button" class="mic-btn" id="mic">
+                            <i class="fas fa-microphone"></i> Tap and Read the Text
+                        </button>
+                        <div class="result" id="result"></div>
+                    </div> -->
+
+                    <!-- Credit required by YouGlish -->
+                    <div class="credit">
+                        Powered by <a href="https://youglish.com" target="_blank" rel="noopener">YouGlish.com</a>
+                        &middot; <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms
+                            of Service</a>
+                        &middot; <a href="http://www.google.com/policies/privacy" target="_blank" rel="noopener">Google
+                            Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer matching Streamlit footer_html -->
+    <div class="footer">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSds_mRQL5smxzz_pWjXfumSRHBqiDuj7GOq_0hIDdsacHWlZg/viewform"
+            target="_blank"><span>♥️ Post Your Reviews Here </span>📜</a>
+    </div>
+
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- App Logic -->
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
